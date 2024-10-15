@@ -34,10 +34,18 @@ class WeatherService {
   }
   // TODO: Create fetchLocationData method
   // private async fetchLocationData(query: string) {}
-  private fetchLocationData(query: string) {
-    const response = await fetch(query);
-    const data = await response.json();
-    return data;
+  private async fetchLocationData(query: string): Promise<any> {
+    try {
+      const response = await fetch(query);
+      if (!response.ok) {
+        throw new Error('Error fetching location data');
+      }
+      const locationData = await response.json();
+      return locationData;
+    } catch (error) {
+      console.error('Error fetching location data:', error);
+      throw error;
+    }
   }
   // TODO: Create destructureLocationData method
   // private destructureLocationData(locationData: Coordinates): Coordinates {}
@@ -59,9 +67,9 @@ class WeatherService {
   } 
   // TODO: Create fetchAndDestructureLocationData method
   // private async fetchAndDestructureLocationData() {}
-  private async fetchAndDestructureLocationData() {
+  private async fetchAndDestructureLocationData(){
     const query = this.buildGeocodeQuery();
-    const locationData = this.fetchLocationData(query);
+    const locationData = await this.fetchLocationData(query);
     const coordinates = this.destructureLocationData(locationData);
     return coordinates;
   }
@@ -69,7 +77,7 @@ class WeatherService {
   // private async fetchWeatherData(coordinates: Coordinates) {}
   private async fetchWeatherData(coordinates: Coordinates) {
     const query = this.buildWeatherQuery(coordinates);
-    const weatherData = this.fetchLocationData(query);
+    const weatherData = await this.fetchLocationData(query);
     return weatherData;
   }
   // TODO: Build parseCurrentWeather method
@@ -101,5 +109,6 @@ class WeatherService {
     return { currentWeather, forecastArray };
   }
 }
+
 
 export default new WeatherService();
