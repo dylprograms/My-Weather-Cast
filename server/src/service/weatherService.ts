@@ -12,7 +12,7 @@ class Weather {
   city: string;
   temperature: number;
   description: string;
-  date?: string;
+  date?: undefined;
   constructor(city: string, temperature: number, description: string, date?: string) {
     this.city = city;
     this.temperature = temperature;
