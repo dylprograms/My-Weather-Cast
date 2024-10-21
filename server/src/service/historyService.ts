@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 // TODO: Define a City class with name and id properties
 class City {
   name: string;
@@ -8,13 +10,87 @@ class City {
     this.id = id;
   }
 }
+
+class HistoryService {
+  private filePath: string;
+
+  constructor() {
+    this.filePath = this.getFilePath();
+  }
+
+  // Function to get the file path from the current module's URL
+  private getFilePath(): string {
+    const __filename = new URL(import.meta.url).pathname;
+    const __dirname = path.dirname(__filename);
+    return path.join(__dirname, '../data/searchHistory.json');
+  }
+
+  // Method to read from searchHistory.json file
+  private async read(): Promise<string> {
+    try {
+      return await fs.readFile(this.filePath, 'utf8');
+    } catch (error) {
+      console.error('Error reading searchHistory.json:', error);
+      throw new Error('Could not read search history');
+    }
+  }
+
+  // Method to write the updated cities array to searchHistory.json
+  private async write(cities: City[]): Promise<void> {
+    try {
+      await fs.writeFile(this.filePath, JSON.stringify(cities, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Error writing to searchHistory.json:', error);
+      throw new Error('Could not write to search history');
+    }
+  }
+
+  // Get all cities from searchHistory.json as an array of City objects
+  async getCities(): Promise<City[]> {
+    try {
+      const data = await this.read();
+      return JSON.parse(data);
+    } catch (error) {
+      return []; // Return an empty array if there's an error or the file doesn't exist
+    }
+  }
+
+  // Add a city to searchHistory.json
+  async addCity(cityName: string): Promise<void> {
+    const cities = await this.getCities();
+    
+    // Check for duplicate cities
+    if (cities.some(city => city.name.toLowerCase() === cityName.toLowerCase())) {
+      throw new Error('City already exists in search history');
+    }
+    
+    const newCity = new City(cityName, (cities.length + 1).toString());
+    cities.push(newCity);
+    await this.write(cities);
+  }
+
+  // Remove a city by its ID from searchHistory.json
+  async removeCity(id: string): Promise<void> {
+    const cities = await this.getCities();
+    const updatedCities = cities.filter(city => city.id !== id);
+
+    if (updatedCities.length === cities.length) {
+      throw new Error('City not found');
+    }
+
+    await this.write(updatedCities);
+  }
+}
+
+export default new HistoryService();
+
+/*
 // TODO: Complete the HistoryService class
 class HistoryService {
-  // TODO: Define a read method that reads from the searchHistory.json file
-  fs = require('fs');
-  path = require('path');
+  // TODO: Define a read method that reads from the searchHistory.json fil
 
-  read() {
+
+  private async read(): Promise<string> {
     return new Promise((resolve, reject) => {
       this.fs.readFile(this.path.join(__dirname, '../data/searchHistory.json'), 'utf8', (err: any, data: any) => {
         if (err) {
@@ -41,9 +117,9 @@ class HistoryService {
   // private async write(cities: City[]) {}
   // TODO: Define a getCities method that reads the cities from the searchHistory.json file and returns them as an array of City objects
   // async getCities() {}
-  async getCities() {
-    const cities = await this.read();
-    return JSON.parse(cities);
+  async getCities()  {
+    const data = await this.read();
+    return JSON.parse(data);
   }
 
   // TODO Define an addCity method that adds a city to the searchHistory.json file
@@ -65,3 +141,4 @@ class HistoryService {
 
 // export default new HistoryService();
 export default new HistoryService();
+*/
