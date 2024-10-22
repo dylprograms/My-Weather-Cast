@@ -12,14 +12,14 @@ class Weather {
   city: string;
   temperature: number;
   description: string;
-  date?: undefined;
+  date: undefined | string;
   constructor(city: string, temperature: number, description: string, date?: string) {
     this.city = city;
     this.temperature = temperature;
     this.description = description;
     this.date = date;
   }
-
+}
 // TODO: Complete the WeatherService class 
 
 class WeatherService {
@@ -47,12 +47,14 @@ class WeatherService {
       throw error;
     }
   }
+
   // TODO: Create destructureLocationData method
   // private destructureLocationData(locationData: Coordinates): Coordinates {}
-  private destructureLocationData(locationData: Coordinates) {
+  private destructureLocationData(locationData: Coordinates): Coordinates {
     const { lat, lon } = locationData;
     return { lat, lon };
   }
+
   // TODO: Create buildGeocodeQuery method
   // private buildGeocodeQuery(): string {}
  private buildGeocodeQuery() {
@@ -102,13 +104,14 @@ class WeatherService {
   // async getWeatherForCity(city: string) {}
   async getWeatherForCity(city: string) {
     this.cityName = city;
-    const coordinates = this.fetchAndDestructureLocationData();
-    const weatherData = this.fetchWeatherData(coordinates);
+    const location = await this.fetchAndDestructureLocationData();
+    const weatherData = await this.fetchWeatherData(location);
     const currentWeather = this.parseCurrentWeather(weatherData);
     const forecastArray = this.buildForecastArray(currentWeather, weatherData.list);
     return { currentWeather, forecastArray };
   }
 }
+
 
 
 export default new WeatherService();
