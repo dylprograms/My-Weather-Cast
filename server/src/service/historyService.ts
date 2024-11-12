@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import fs from 'node:fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 // TODO: Define a City class with name and id properties
 class City {
   name: string;
@@ -12,12 +12,57 @@ class City {
 }
 
 class HistoryService {
-  private filePath: string;
-
-  constructor() {
-    this.filePath = this.getFilePath();
+  private async read(){
+    return await fs.readFile('db/db.json', {
+      flag: 'r',
+      encoding: 'utf8'
+    }
+    );
+  }
+  private async write(cities: City[]){
+    return await fs.writeFile('db/db.json', JSON.stringify(cities, null, '\t'), {
+    });
+  }
+  async getCities(){
+    return await this.read().then((cities) => {
+      let parsedCities: City[] = JSON.parse(cities);
+      try{
+      parsedCities = JSON.parse(cities);
+      } catch (error){
+        console.error(error);
+      }
+      return parsedCities;
+    }
+    );
   }
 
+    async addCity(cityName: string){
+      if (!cityName){
+        throw new Error('City name is required');
+      }
+      const newCity: City = { name: cityName, id: uuidv4() };
+      return this.getCities().then((cities) => {
+        const cityExists = cities.some(city => city.name.toLowerCase() === cityName.toLowerCase());
+        if (cityExists){
+          throw new Error('City already exists in search history');
+        }
+        cities.push(newCity);
+        return this.write(cities);
+      }
+      );
+    }
+    async deleteCity(id: string){
+      const cities = await this.getCities();
+      const updatedCities = cities.filter(city => city.id !== id);
+      if (updatedCities.length === cities.length){
+        throw new Error('City not found');
+      }
+      await this.write(updatedCities);
+    }
+  }
+export default new HistoryService();
+
+/*
   // Function to get the file path from the current module's URL
   private getFilePath(): string {
     const __filename = new URL(import.meta.url).pathname;
@@ -141,4 +186,5 @@ class HistoryService {
 
 // export default new HistoryService();
 export default new HistoryService();
+
 */
