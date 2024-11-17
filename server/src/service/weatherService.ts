@@ -15,6 +15,7 @@ interface Coordinates {
 class Weather {
   city: string;
   date: string;
+  windSpeed: number;
   tempF: number;
   humidity: number;
   icon: string;
@@ -22,13 +23,15 @@ class Weather {
   constructor(
     city: string,
     date: string,
+    windSpeed: number,
     tempF: number,
     humidity: number,
     icon: string,
-    iconDescription: string
+    iconDescription: string,
   ) {
     this.city = city;
     this.date = date;
+    this.windSpeed = windSpeed;
     this.tempF = tempF;
     this.humidity = humidity;
     this.icon = icon;
@@ -111,7 +114,7 @@ class WeatherService {
   // private parseCurrentWeather(response: any) {}
   private parseCurrentWeather(response: any) {
     const { dt_txt, main, weather } = response;
-    const currentWeather = new Weather(this.cityName, dt_txt, main.temp, main.humidity, weather[0].icon, weather[0].description);
+    const currentWeather = new Weather(this.cityName, dt_txt, main.temp, response.windSpeed, main.humidity, weather[0].icon, weather[0].description);
     return currentWeather;
 
   }
@@ -122,7 +125,7 @@ class WeatherService {
    const breakDown = weatherData.filter((data: any) => data.dt_txt.includes('12:00:00'));
    for (const data of breakDown) {
      const { dt_txt, main, weather } = data;
-     const forecast = new Weather(this.cityName, dt_txt, main.temp, main.humidity, weather[0].icon, weather[0].description);
+     const forecast = new Weather(this.cityName, dt_txt, main.temp, main.windSpeed, main.humidity, weather[0].icon, weather[0].description);
      fiveDayForecast.push(forecast);
    }
     return fiveDayForecast;
